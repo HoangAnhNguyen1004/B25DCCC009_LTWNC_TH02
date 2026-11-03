@@ -30,7 +30,7 @@ const VirtualizedRow = memo(function VirtualizedRow({
   return <ExerciseRow exercise={data.exercises[index]} index={index} style={style} onStart={data.onStart} showRoutineAction onAddToRoutine={data.onAddToRoutine} />;
 });
 
-const ExerciseList = memo(function ExerciseList({ exercises, onStart, onAddToRoutine }: ExerciseListData) {
+const ExerciseList = memo(function ExerciseList({ exercises, onStart, onAddToRoutine, virtualized }: ExerciseListData & { virtualized: boolean }) {
   const listRef = useRef<FixedSizeList<ExerciseListData>>(null);
   const itemData = useMemo(() => ({ exercises, onStart, onAddToRoutine }), [exercises, onStart, onAddToRoutine]);
 
@@ -49,7 +49,7 @@ const ExerciseList = memo(function ExerciseList({ exercises, onStart, onAddToRou
           <span role="columnheader">Thời lượng</span>
           <span className="actions-heading" role="columnheader">Thao tác</span>
         </div>
-        <FixedSizeList<ExerciseListData>
+        {virtualized ? <FixedSizeList<ExerciseListData>
           ref={listRef}
           height={560}
           itemSize={56}
@@ -61,13 +61,17 @@ const ExerciseList = memo(function ExerciseList({ exercises, onStart, onAddToRou
           className="virtual-list"
         >
           {VirtualizedRow}
-        </FixedSizeList>
+        </FixedSizeList> : (
+          <div className="static-list">
+            {exercises.map((exercise, index) => <ExerciseRow key={exercise.id} exercise={exercise} index={index} onStart={onStart} showRoutineAction onAddToRoutine={onAddToRoutine} />)}
+          </div>
+        )}
       </div>
     </div>
   );
 });
 
-export default function LibraryPage() {
+export default function LibraryPage({ virtualized = true }: { virtualized?: boolean }) {
   const [keyword, setKeyword] = useState('');
   const [group, setGroup] = useState<MuscleGroup | ''>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('default');
@@ -179,7 +183,7 @@ export default function LibraryPage() {
           )}
         </div>
 
-        {exercises.length > 0 ? <ExerciseList exercises={exercises} onStart={handleStart} onAddToRoutine={activeRoutineId ? handleAddToRoutine : undefined} /> : (
+        {exercises.length > 0 ? <ExerciseList exercises={exercises} onStart={handleStart} onAddToRoutine={activeRoutineId ? handleAddToRoutine : undefined} virtualized={virtualized} /> : (
           <div className="empty-state">
             <span className="empty-symbol" aria-hidden="true">⌕</span>
             <h2>Không tìm thấy bài tập nào</h2>

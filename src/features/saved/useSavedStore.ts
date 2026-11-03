@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 
 interface SavedState {
   ids: string[];
@@ -7,18 +7,18 @@ interface SavedState {
 }
 
 export const useSavedStore = create<SavedState>()(
-  persist(
+  devtools(persist(
     (set) => ({
       ids: [],
       toggle: (id) => set((state) => ({
         ids: state.ids.includes(id)
           ? state.ids.filter((savedId) => savedId !== id)
           : [...state.ids, id],
-      })),
+      }), false, 'saved/toggle'),
     }),
     {
       name: 'workout-saved',
       partialize: (state) => ({ ids: state.ids }),
     },
-  ),
+  ), { name: 'Workout saved', enabled: import.meta.env.DEV }),
 );

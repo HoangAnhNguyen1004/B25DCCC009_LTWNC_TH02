@@ -1,0 +1,49 @@
+{
+  "measuredAt": "2026-11-03T08:53:34.309Z",
+  "metric": "React.Profiler actualDuration (mount), development build, no StrictMode",
+  "browser": "156.0.8078.74",
+  "cpu": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "cpuThrottling": "none",
+  "samples": [
+    {
+      "mode": "virtualized",
+      "actualDuration": 16.400000005960464,
+      "baseDuration": 13.300000011920929,
+      "rows": 12
+    },
+    {
+      "mode": "virtualized",
+      "actualDuration": 16.799999982118607,
+      "baseDuration": 12.400000125169754,
+      "rows": 12
+    },
+    {
+      "mode": "virtualized",
+      "actualDuration": 17.099999994039536,
+      "baseDuration": 13.399999916553497,
+      "rows": 12
+    },
+    {
+      "mode": "full-list",
+      "actualDuration": 823.6000002622604,
+      "baseDuration": 393.6000007390976,
+      "rows": 10000
+    },
+    {
+      "mode": "full-list",
+      "actualDuration": 789.7999998629093,
+      "baseDuration": 396.7999989390373,
+      "rows": 10000
+    },
+    {
+      "mode": "full-list",
+      "actualDuration": 775.0000000596046,
+      "baseDuration": 397.59999972581863,
+      "rows": 10000
+    }
+  ]
+}
