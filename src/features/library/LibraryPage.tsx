@@ -6,11 +6,13 @@ import { EXERCISES, GROUPS } from '../../data/exercises';
 import { useDebounce } from '../../hooks/useDebounce';
 import type { Exercise, MuscleGroup } from '../../types';
 import { ExerciseRow } from './ExerciseRow';
+import { useSessionStore } from '../session/useSessionStore';
 
 type SortOrder = 'default' | 'name' | 'duration';
 
 interface ExerciseListData {
   exercises: Exercise[];
+  onStart: (exercise: Exercise) => void;
 }
 
 function exerciseKey(index: number, data: ExerciseListData): string {
@@ -22,12 +24,12 @@ const VirtualizedRow = memo(function VirtualizedRow({
   style,
   data,
 }: ListChildComponentProps<ExerciseListData>) {
-  return <ExerciseRow exercise={data.exercises[index]} index={index} style={style} />;
+  return <ExerciseRow exercise={data.exercises[index]} index={index} style={style} onStart={data.onStart} />;
 });
 
-const ExerciseList = memo(function ExerciseList({ exercises }: ExerciseListData) {
+const ExerciseList = memo(function ExerciseList({ exercises, onStart }: ExerciseListData) {
   const listRef = useRef<FixedSizeList<ExerciseListData>>(null);
-  const itemData = useMemo(() => ({ exercises }), [exercises]);
+  const itemData = useMemo(() => ({ exercises, onStart }), [exercises, onStart]);
 
   useLayoutEffect(() => {
     listRef.current?.scrollTo(0);
@@ -67,6 +69,7 @@ export default function LibraryPage() {
   const [group, setGroup] = useState<MuscleGroup | ''>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('default');
   const debouncedKeyword = useDebounce(keyword, 300);
+  const startSession = useSessionStore((state) => state.startSession);
 
   const exercises = useMemo(() => {
     const search = debouncedKeyword.trim().toLocaleLowerCase('vi');
@@ -84,6 +87,10 @@ export default function LibraryPage() {
     }
     return result;
   }, [debouncedKeyword, group, sortOrder]);
+
+  const handleStart = useCallback((exercise: Exercise) => {
+    startSession(exercises, exercises.findIndex((item) => item.id === exercise.id));
+  }, [exercises, startSession]);
 
   const handleKeywordShift = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setKeyword(event.target.value);
@@ -145,7 +152,7 @@ export default function LibraryPage() {
           )}
         </div>
 
-        {exercises.length > 0 ? <ExerciseList exercises={exercises} /> : (
+        {exercises.length > 0 ? <ExerciseList exercises={exercises} onStart={handleStart} /> : (
           <div className="empty-state">
             <span className="empty-symbol" aria-hidden="true">⌕</span>
             <h2>Không tìm thấy bài tập nào</h2>
@@ -154,7 +161,7 @@ export default function LibraryPage() {
           </div>
         )}
       </section>
-      <p className="library-note">Thời lượng mỗi bài từ 30 đến 120 giây. Các thao tác buổi tập và lưu bài được bổ sung ở phần 2.</p>
+      <p className="library-note">Thời lượng mỗi bài từ 30 đến 120 giây. Bắt đầu từ danh sách đang xem hoặc thêm từng bài vào buổi tập của bạn.</p>
     </>
   );
 }

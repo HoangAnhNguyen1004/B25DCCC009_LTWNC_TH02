@@ -2,6 +2,8 @@ const BUILD_TAG = "wk-5182";
 
 import { Link, NavLink, Route, Routes } from 'react-router-dom';
 import LibraryPage from './features/library/LibraryPage';
+import SavedPage from './features/saved/SavedPage';
+import { SessionBar } from './features/session/SessionBar';
 
 function ComingSoonPage({ title, description }: { title: string; description: string }) {
   return (
@@ -36,13 +38,14 @@ export default function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<LibraryPage />} />
-          <Route path="/saved" element={<ComingSoonPage title="Bài tập đã lưu" description="Chức năng lưu bài tập sẽ được hoàn thiện ở phần 2." />} />
+          <Route path="/saved" element={<SavedPage />} />
           <Route path="/routines" element={<ComingSoonPage title="Giáo án" description="Chức năng tạo và quản lý giáo án sẽ được hoàn thiện ở phần 3." />} />
           <Route path="/routines/:id" element={<ComingSoonPage title="Chi tiết giáo án" description="Nội dung giáo án sẽ được hoàn thiện ở phần 3." />} />
           <Route path="*" element={<ComingSoonPage title="Không tìm thấy trang" description="Đường dẫn này không tồn tại. Hãy quay lại kho bài tập để tiếp tục." />} />
         </Routes>
       </main>
       <footer className="site-footer">Bấm giờ tập luyện <span aria-hidden="true">·</span> Kiên trì từng giây, tiến bộ mỗi ngày.</footer>
+      <SessionBar />
     </div>
   );
 }
