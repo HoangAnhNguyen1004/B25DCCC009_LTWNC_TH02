@@ -10,6 +10,8 @@ interface ExerciseRowProps {
   index: number;
   style?: CSSProperties;
   onStart?: (exercise: Exercise) => void;
+  showRoutineAction?: boolean;
+  onAddToRoutine?: (exercise: Exercise) => void;
 }
 
 export const ExerciseRow = memo(function ExerciseRow({
@@ -17,6 +19,8 @@ export const ExerciseRow = memo(function ExerciseRow({
   index,
   style,
   onStart,
+  showRoutineAction = false,
+  onAddToRoutine,
 }: ExerciseRowProps) {
   const isSaved = useSavedStore((state) => state.ids.includes(exercise.id));
   const toggleSaved = useSavedStore((state) => state.toggle);
@@ -27,6 +31,7 @@ export const ExerciseRow = memo(function ExerciseRow({
     () => addToSession(exercise),
     [addToSession, exercise],
   );
+  const handleAddToRoutine = useCallback(() => onAddToRoutine?.(exercise), [onAddToRoutine, exercise]);
 
   return (
     <div className="exercise-row exercise-grid" style={style} role="row" aria-rowindex={index + 2}>
@@ -39,6 +44,7 @@ export const ExerciseRow = memo(function ExerciseRow({
         <button className="start-button" type="button" onClick={handleStart} disabled={!onStart}>Bắt đầu</button>
         <button className="save-button" type="button" onClick={handleSave} aria-label={isSaved ? 'Bỏ lưu' : 'Lưu bài tập'} aria-pressed={isSaved} title={isSaved ? 'Bỏ lưu' : 'Lưu bài tập'}>{isSaved ? '★' : '☆'}</button>
         <button className="queue-button" type="button" onClick={handleAddToSession}>+ Buổi tập</button>
+        {showRoutineAction && <button className="routine-button" type="button" onClick={handleAddToRoutine} disabled={!onAddToRoutine}>+ Giáo án</button>}
       </div>
     </div>
   );

@@ -7,12 +7,15 @@ import { useDebounce } from '../../hooks/useDebounce';
 import type { Exercise, MuscleGroup } from '../../types';
 import { ExerciseRow } from './ExerciseRow';
 import { useSessionStore } from '../session/useSessionStore';
+import { useRoutineDispatch, useRoutines } from '../routines/RoutineContext';
+import { Link } from 'react-router-dom';
 
 type SortOrder = 'default' | 'name' | 'duration';
 
 interface ExerciseListData {
   exercises: Exercise[];
   onStart: (exercise: Exercise) => void;
+  onAddToRoutine?: (exercise: Exercise) => void;
 }
 
 function exerciseKey(index: number, data: ExerciseListData): string {
@@ -24,12 +27,12 @@ const VirtualizedRow = memo(function VirtualizedRow({
   style,
   data,
 }: ListChildComponentProps<ExerciseListData>) {
-  return <ExerciseRow exercise={data.exercises[index]} index={index} style={style} onStart={data.onStart} />;
+  return <ExerciseRow exercise={data.exercises[index]} index={index} style={style} onStart={data.onStart} showRoutineAction onAddToRoutine={data.onAddToRoutine} />;
 });
 
-const ExerciseList = memo(function ExerciseList({ exercises, onStart }: ExerciseListData) {
+const ExerciseList = memo(function ExerciseList({ exercises, onStart, onAddToRoutine }: ExerciseListData) {
   const listRef = useRef<FixedSizeList<ExerciseListData>>(null);
-  const itemData = useMemo(() => ({ exercises, onStart }), [exercises, onStart]);
+  const itemData = useMemo(() => ({ exercises, onStart, onAddToRoutine }), [exercises, onStart, onAddToRoutine]);
 
   useLayoutEffect(() => {
     listRef.current?.scrollTo(0);
@@ -37,7 +40,7 @@ const ExerciseList = memo(function ExerciseList({ exercises, onStart }: Exercise
 
   return (
     <div className="table-scroll">
-      <div className="exercise-table" role="table" aria-label="Danh sách bài tập" aria-rowcount={exercises.length + 1} aria-colcount={6}>
+      <div className="exercise-table exercise-table--routines" role="table" aria-label="Danh sách bài tập" aria-rowcount={exercises.length + 1} aria-colcount={6}>
         <div className="table-heading exercise-grid" role="row">
           <span role="columnheader">STT</span>
           <span role="columnheader">Bài tập</span>
@@ -70,6 +73,11 @@ export default function LibraryPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('default');
   const debouncedKeyword = useDebounce(keyword, 300);
   const startSession = useSessionStore((state) => state.startSession);
+  const routines = useRoutines();
+  const dispatch = useRoutineDispatch();
+  const [selectedRoutineId, setSelectedRoutineId] = useState('');
+  const activeRoutineId = routines.some((routine) => routine.id === selectedRoutineId)
+    ? selectedRoutineId : routines[0]?.id ?? '';
 
   const exercises = useMemo(() => {
     const search = debouncedKeyword.trim().toLocaleLowerCase('vi');
@@ -91,6 +99,14 @@ export default function LibraryPage() {
   const handleStart = useCallback((exercise: Exercise) => {
     startSession(exercises, exercises.findIndex((item) => item.id === exercise.id));
   }, [exercises, startSession]);
+
+  const handleAddToRoutine = useCallback((exercise: Exercise) => {
+    if (activeRoutineId) dispatch({ type: 'addExercise', id: activeRoutineId, exerciseId: exercise.id });
+  }, [dispatch, activeRoutineId]);
+
+  const handleRoutineChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRoutineId(event.target.value);
+  }, []);
 
   const handleKeywordShift = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setKeyword(event.target.value);
@@ -145,6 +161,17 @@ export default function LibraryPage() {
           </div>
         </div>
 
+        <div className="routine-picker">
+          <div className="field">
+            <label htmlFor="selected-routine">Giáo án đang chọn</label>
+            <select id="selected-routine" value={activeRoutineId} onChange={handleRoutineChange} disabled={routines.length === 0}>
+              {routines.length === 0 && <option value="">Chưa có giáo án</option>}
+              {routines.map((routine) => <option key={routine.id} value={routine.id}>{routine.name}</option>)}
+            </select>
+          </div>
+          <Link className="text-link" to="/routines">{routines.length === 0 ? 'Tạo giáo án đầu tiên' : 'Quản lý giáo án'}</Link>
+        </div>
+
         <div className="results-toolbar">
           <p role="status" aria-live="polite">Tìm thấy <strong>{exercises.length}</strong> bài tập</p>
           {(keyword !== '' || group !== '' || sortOrder !== 'default') && (
@@ -152,7 +179,7 @@ export default function LibraryPage() {
           )}
         </div>
 
-        {exercises.length > 0 ? <ExerciseList exercises={exercises} onStart={handleStart} /> : (
+        {exercises.length > 0 ? <ExerciseList exercises={exercises} onStart={handleStart} onAddToRoutine={activeRoutineId ? handleAddToRoutine : undefined} /> : (
           <div className="empty-state">
             <span className="empty-symbol" aria-hidden="true">⌕</span>
             <h2>Không tìm thấy bài tập nào</h2>
