@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.local
+.codex-tools/
+.npm-cache/
+.verification/
